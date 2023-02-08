@@ -1,0 +1,4 @@
+Competition Task 2：Intelligent Distributed Radio Map Construction
+Download：
+https://iwcs-contest.obs.cn-north-4.myhuaweicloud.com/RM_baseline.zip
+According  to the competition rules, the committee authorizes the participants to use the provided data to conduct model training in the designated competition. The participants are not allowed to use the data for any commercial purposes, or share the data with non-participants. During the competition period, data, code and models are strictly prohibited from open source.

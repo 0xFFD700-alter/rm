@@ -5,7 +5,7 @@ import json
 from model_service.pytorch_model_service import PTServingBaseService
 import torch
 import os
-from model import DoraNet
+from model import Pointnet
 
 
 class RadioMapService(PTServingBaseService):
@@ -22,7 +22,7 @@ class RadioMapService(PTServingBaseService):
 
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.file_names = []
-        model = DoraNet()
+        model = Pointnet()
         model.load_state_dict(torch.load(model_path, map_location=device))
         model.eval()
         self.model = model
@@ -48,7 +48,7 @@ class RadioMapService(PTServingBaseService):
         data_tmp = data[self.file_name]
         data_tmp = data_tmp[0]
         pos = torch.Tensor(data_tmp['pos'])
-        result = self.model(pos).to(device)
+        result = self.model(pos.unsqueeze(dim=2)).to(device)
 
         print(f'result:{type(result)}--{result}')
         pathloss = result.detach().cpu().numpy().tolist()

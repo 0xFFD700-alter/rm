@@ -1,6 +1,6 @@
 import copy
 import sys
-from model import DoraNet
+from model import DoraNet, Pointnet
 from util import *
 from dataset import DoraSet, DoraSetComb
 import os
@@ -12,10 +12,10 @@ epochs = 500  # total epochs
 local_epochs = 5 # local epochs of each user at an iteration
 saveLossInterval = 1  # intervals to save loss
 saveModelInterval = 10  # intervals to save model
-batchSize = 500  # batchsize for training and evaluation
+batchSize = 200  # batchsize for training and evaluation
 num_users = 90   # total users
 num_activate_users = 5
-lr = 3e-4  # learning rate
+lr = 5e-4  # learning rate
 cudaIdx = "cuda:0"  # GPU card index
 device = torch.device(cudaIdx if torch.cuda.is_available() else "cpu")
 num_workers = 0  # workers for dataloader
@@ -65,10 +65,20 @@ class Client: # as a user
         for local_epoch in range(1, local_epochs + 1):
             for i, (pos, pathloss) in enumerate(self.data_loader):
                 pos = pos.float().to(device)
+                bs = pos.shape[0]
                 pathloss = pathloss.float().to(device)
                 optimizer.zero_grad()
-                p_pathloss = model(pos)
-                loss = torch.mean(torch.abs(p_pathloss[pathloss != 0] - pathloss[pathloss != 0]))
+                # p_pathloss = model(pos)
+                p_pathloss, m2x2, m64x64 = model(pos.unsqueeze(dim=2))
+                id2x2 = torch.eye(2, requires_grad=True).repeat(bs, 1, 1)
+                id64x64 = torch.eye(64, requires_grad=True).repeat(bs, 1, 1)
+                if p_pathloss.is_cuda:
+                    id2x2 = id2x2.cuda()
+                    id64x64 = id64x64.cuda()
+                diff2x2 = id2x2 - torch.bmm(m2x2, m2x2.transpose(1, 2))
+                diff64x64 = id64x64 - torch.bmm(m64x64, m64x64.transpose(1, 2))
+                alpha = 0.0001
+                loss = torch.mean(torch.abs(p_pathloss[pathloss != 0] - pathloss[pathloss != 0])) + alpha * (torch.norm(diff2x2)+torch.norm(diff64x64)) / float(bs)
                 loss.backward()
                 optimizer.step()
                 print(f"Client: {idx}({self.user_idx:2d}) Local Epoch: [{local_epoch}][{i}/{len(self.data_loader)}]---- loss {loss.item():.4f}")
@@ -85,7 +95,8 @@ def activateClient(train_dataloaders, user_idx, server):
 def train(train_dataloaders, user_idx, server, global_model, up_link, learningRate):
     clients, local_parameters = activateClient(train_dataloaders, user_idx, server)
     for i in range(len(user_idx)):
-        model = DoraNet().to(device)
+        # model = DoraNet().to(device)
+        model = Pointnet().to(device)
         model.load_state_dict(local_parameters[i])
         model.train()
         clients[i].train(model, learningRate, i, global_model)
@@ -102,7 +113,8 @@ def valid(data_loader, model, epoch):
         for i, (pos, pathloss) in enumerate(data_loader):
             pos = pos.float().to(device)
             pathloss = pathloss.float().to(device)
-            p_pathloss = model(pos)
+            # p_pathloss = model(pos)
+            p_pathloss, _, _ = model(pos.unsqueeze(dim=2))
             loss = torch.mean(torch.abs(p_pathloss[pathloss != 0] - pathloss[pathloss != 0])) ## unit in dB
             tmp1 = torch.sum(torch.abs(10 ** (0.1 * p_pathloss[pathloss != 0]) - 10 ** (0.1 * pathloss[pathloss != 0])) ** 2)
             tmp2 = torch.sum(torch.abs(10 ** (0.1 * pathloss[pathloss != 0])) ** 2)
@@ -136,7 +148,8 @@ def train_main(train_dataset_path):
 
     valid_data_comb = DoraSetComb(valid_datasets)
     valid_loader = torch.utils.data.DataLoader(valid_data_comb, 1, shuffle=False, num_workers=num_workers)
-    model = DoraNet()
+    # model = DoraNet()
+    model = Pointnet()
     global_parameters = model.state_dict()
     up_link = Link("uplink")
     down_link = Link("downlink")

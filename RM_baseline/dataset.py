@@ -5,7 +5,7 @@ from torch.utils.data import Dataset
 os.environ['KMP_DUPLICATE_LIB_OK']="TRUE"
 
 class DoraSet(Dataset):
-    def __init__(self,dataset_path,set='train',clientId=1):
+    def __init__(self,dataset_path, set='train',clientId=1):
         self.set=set
         folder=dataset_path
         if set=='test':
@@ -14,7 +14,7 @@ class DoraSet(Dataset):
             self.data=np.reshape(np.load(folder+f'user_{clientId:02d}.npy'),(-1,6))
 
     def __getitem__(self, idx):
-        return self.data[idx,:2],self.data[idx,2:]
+        return self.data[idx,:2], self.data[idx,2:]
 
     def __len__(self):
         return len(self.data)
@@ -41,6 +41,6 @@ class DoraSetComb(Dataset):
 
 if __name__=='__main__':
     dataset=DoraSet("data/train/",set="train",clientId=1)
-    pos,pathloss=dataset[0]
+    pos, pathloss=dataset[0]
     print(f'pos:',pos)
     print(f'pathloss:',pathloss)

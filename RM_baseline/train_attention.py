@@ -1,6 +1,6 @@
 import copy
 import sys
-from model import DoraNet
+from model_attention import AttentionNet, TransformerNet, CopyTaskModel
 from util import *
 from dataset import DoraSet, DoraSetComb
 import os
@@ -85,7 +85,7 @@ def activateClient(train_dataloaders, user_idx, server):
 def train(train_dataloaders, user_idx, server, global_model, up_link, learningRate):
     clients, local_parameters = activateClient(train_dataloaders, user_idx, server)
     for i in range(len(user_idx)):
-        model = DoraNet().to(device)
+        model = TransformerNet(2).to(device)
         model.load_state_dict(local_parameters[i])
         model.train()
         clients[i].train(model, learningRate, i, global_model)
@@ -136,7 +136,7 @@ def train_main(train_dataset_path):
 
     valid_data_comb = DoraSetComb(valid_datasets)
     valid_loader = torch.utils.data.DataLoader(valid_data_comb, 1, shuffle=False, num_workers=num_workers)
-    model = DoraNet()
+    model = TransformerNet(2)
     global_parameters = model.state_dict()
     up_link = Link("uplink")
     down_link = Link("downlink")

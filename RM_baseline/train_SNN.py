@@ -1,6 +1,6 @@
 import copy
 import sys
-from model import DoraNet
+from model_SNN import DoraNet, snn_setting
 from util import *
 from dataset import DoraSet, DoraSetComb
 import os
@@ -71,6 +71,7 @@ class Client: # as a user
                 loss = torch.mean(torch.abs(p_pathloss[pathloss != 0] - pathloss[pathloss != 0]))
                 loss.backward()
                 optimizer.step()
+                functional.reset_net(model)
                 print(f"Client: {idx}({self.user_idx:2d}) Local Epoch: [{local_epoch}][{i}/{len(self.data_loader)}]---- loss {loss.item():.4f}")
 
 
@@ -85,7 +86,7 @@ def activateClient(train_dataloaders, user_idx, server):
 def train(train_dataloaders, user_idx, server, global_model, up_link, learningRate):
     clients, local_parameters = activateClient(train_dataloaders, user_idx, server)
     for i in range(len(user_idx)):
-        model = DoraNet().to(device)
+        model = DoraNet(snn_setting).to(device)
         model.load_state_dict(local_parameters[i])
         model.train()
         clients[i].train(model, learningRate, i, global_model)
@@ -136,7 +137,7 @@ def train_main(train_dataset_path):
 
     valid_data_comb = DoraSetComb(valid_datasets)
     valid_loader = torch.utils.data.DataLoader(valid_data_comb, 1, shuffle=False, num_workers=num_workers)
-    model = DoraNet()
+    model = DoraNet(snn_setting)
     global_parameters = model.state_dict()
     up_link = Link("uplink")
     down_link = Link("downlink")

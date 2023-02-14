@@ -1,13 +1,14 @@
 import copy
 import sys
-from model import DoraNet
+from model_RBF import DoraNet, gaussian
 from util import *
 from dataset import DoraSet, DoraSetComb
 import os
 from spikingjelly.clock_driven import neuron, encoding, functional
 os.environ['KMP_DUPLICATE_LIB_OK'] = "TRUE"
 sys.path.append("../..")
-
+layer_list = [2, 5, 10, 5, 4]
+cnetres = [40, 80, 160, 80]
 epochs = 500  # total epochs
 local_epochs = 5 # local epochs of each user at an iteration
 saveLossInterval = 1  # intervals to save loss
@@ -21,7 +22,6 @@ device = torch.device(cudaIdx if torch.cuda.is_available() else "cpu")
 num_workers = 0  # workers for dataloader
 evaluation = False  # evaluation only if True
 criterion = torch.nn.MSELoss().to(device)
-
 
 class Link(object):
     def __init__(self, name):
@@ -85,7 +85,7 @@ def activateClient(train_dataloaders, user_idx, server):
 def train(train_dataloaders, user_idx, server, global_model, up_link, learningRate):
     clients, local_parameters = activateClient(train_dataloaders, user_idx, server)
     for i in range(len(user_idx)):
-        model = DoraNet().to(device)
+        model = DoraNet(layer_list, cnetres, gaussian).to(device)
         model.load_state_dict(local_parameters[i])
         model.train()
         clients[i].train(model, learningRate, i, global_model)
@@ -136,7 +136,7 @@ def train_main(train_dataset_path):
 
     valid_data_comb = DoraSetComb(valid_datasets)
     valid_loader = torch.utils.data.DataLoader(valid_data_comb, 1, shuffle=False, num_workers=num_workers)
-    model = DoraNet()
+    model = DoraNet(layer_list, cnetres, gaussian)
     global_parameters = model.state_dict()
     up_link = Link("uplink")
     down_link = Link("downlink")

@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 
+
 class DoraNet(nn.Module):
     def __init__(self,test=False):
         super(DoraNet, self).__init__()

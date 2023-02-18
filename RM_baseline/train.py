@@ -61,17 +61,20 @@ class Client: # as a user
         self.user_idx = user_idx
 
     def train(self, model, learningRate, idx, global_model): # training locally
-        optimizer = torch.optim.Adam(model.parameters(), lr=learningRate)
+        optimizer = torch.optim.AdamW(model.parameters(), lr=learningRate)
         for local_epoch in range(1, local_epochs + 1):
             for i, (pos, pathloss) in enumerate(self.data_loader):
                 pos = pos.float().to(device)
                 pathloss = pathloss.float().to(device)
+                mask = torch.where(pathloss != 0., 1., 0.).float().to(device)
                 optimizer.zero_grad()
-                p_pathloss = model(pos)
-                loss = torch.mean(torch.abs(p_pathloss[pathloss != 0] - pathloss[pathloss != 0]))
-                loss.backward()
+                reg, cls = model(pos)
+                reg_loss = torch.mean(torch.abs(reg[pathloss != 0] - pathloss[pathloss != 0]))
+                reg_loss.backward()
+                cls_loss = torch.nn.functional.binary_cross_entropy_with_logits(cls, mask)
+                cls_loss.backward()
                 optimizer.step()
-                print(f"Client: {idx}({self.user_idx:2d}) Local Epoch: [{local_epoch}][{i}/{len(self.data_loader)}]---- loss {loss.item():.4f}")
+                print(f"Client: {idx}({self.user_idx:2d}) Local Epoch: [{local_epoch}][{i+1}/{len(self.data_loader)}]---- loss {reg_loss.item():.4f}, {cls_loss.item():.4f}")
 
 
 def activateClient(train_dataloaders, user_idx, server):

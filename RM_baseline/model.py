@@ -23,7 +23,9 @@ class ClsNet(nn.Module):
         self.mlp = nn.Sequential(
             nn.Linear(2, 128),
             nn.PReLU(),
-            nn.Linear(128, 32),
+            nn.Linear(128, 256),
+            nn.PReLU(),
+            nn.Linear(256, 32),
             nn.PReLU(),
             nn.Linear(32, 1)
         )
@@ -46,7 +48,7 @@ class DoraNet(nn.Module):
         if self.training:
             return reg, cls
         else:
-            return reg * (torch.sigmoid(cls) > 0.5).float()
+            return reg * (torch.sigmoid(cls) > 0.5).float() * (158.7472538974973 - 57.70791516029391) - 158.7472538974973
 
 def main():    
     b = 1

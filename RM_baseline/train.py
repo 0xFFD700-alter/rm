@@ -12,7 +12,7 @@ epochs = 500  # total epochs
 local_epochs = 5 # local epochs of each user at an iteration
 saveLossInterval = 1  # intervals to save loss
 saveModelInterval = 10  # intervals to save model
-batchSize = 500  # batchsize for training and evaluation
+batchSize = 512  # batchsize for training and evaluation
 num_users = 90   # total users
 num_activate_users = 5
 lr = 3e-4  # learning rate
@@ -67,6 +67,7 @@ class Client: # as a user
                 pos = pos.float().to(device)
                 pathloss = pathloss.float().to(device)
                 mask = torch.where(pathloss != 0., 1., 0.).float().to(device)
+                pathloss = (pathloss + 158.7472538974973) / (158.7472538974973 - 57.70791516029391)
                 optimizer.zero_grad()
                 reg, cls = model(pos)
                 reg_loss = torch.mean(torch.abs(reg[pathloss != 0] - pathloss[pathloss != 0]))
@@ -74,7 +75,7 @@ class Client: # as a user
                 cls_loss = torch.nn.functional.binary_cross_entropy_with_logits(cls, mask)
                 cls_loss.backward()
                 optimizer.step()
-                print(f"Client: {idx}({self.user_idx:2d}) Local Epoch: [{local_epoch}][{i+1}/{len(self.data_loader)}]---- loss {reg_loss.item():.4f}, {cls_loss.item():.4f}")
+                print(f"Client: {idx}({self.user_idx:2d}) Local Epoch: [{local_epoch}][{i+1}/{len(self.data_loader)}]---- loss {reg_loss.item():f}, {cls_loss.item():f}")
 
 
 def activateClient(train_dataloaders, user_idx, server):

@@ -9,7 +9,7 @@ os.environ['KMP_DUPLICATE_LIB_OK'] = "TRUE"
 sys.path.append("../..")
 
 epochs = 500  # total epochs
-local_epochs = 5 # local epochs of each user at an iteration
+local_epochs = 8 # local epochs of each user at an iteration
 saveLossInterval = 1  # intervals to save loss
 saveModelInterval = 10  # intervals to save model
 batchSize = 512  # batchsize for training and evaluation

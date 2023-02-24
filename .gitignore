@@ -1,5 +1,7 @@
 .DS_Store
-model1.pth
+/RM_baseline/models/
+/RM_baseline/results/
+/RM_baseline/fig/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

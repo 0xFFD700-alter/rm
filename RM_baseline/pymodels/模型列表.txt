@@ -1,0 +1,5 @@
+regcls：四个reg与四个cls小网络并行
+doracls：一个cls分类器+baseline
+bseuclidean：一个cls分类器+baseline+输入特征为相对距离的二范数
+bsmanhatten：一个cls分类器+baseline+输入特征为相对距离的差值
+resmlp：一个cls分类器+ResMLP（三层MLP，6个block，MLP前后都有Affine作LayerNorm）

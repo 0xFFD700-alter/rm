@@ -75,7 +75,7 @@ class Client: # as a user
                 cls_loss = torch.nn.functional.binary_cross_entropy_with_logits(cls, mask)
                 cls_loss.backward()
                 optimizer.step()
-                print(f"Client: {idx}({self.user_idx:2d}) Local Epoch: [{local_epoch}][{i+1}/{len(self.data_loader)}]---- loss {reg_loss.item():f}, {cls_loss.item():f}")
+                # print(f"Client: {idx}({self.user_idx:2d}) Local Epoch: [{local_epoch}][{i+1}/{len(self.data_loader)}]---- loss {reg_loss.item():f}, {cls_loss.item():f}")
 
 
 def activateClient(train_dataloaders, user_idx, server):

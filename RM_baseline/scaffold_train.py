@@ -104,7 +104,7 @@ class Client: # as a user
                 for name in local_parameter:
                     # 10 line in algorithm
                     local_parameter[name] = local_parameter[name] - learningRate *  (global_control_parameter[name] - local_control_parameter[name])
-                print(f"Client: {idx}({self.user_idx:2d}) Local Epoch: [{local_epoch}][{i+1}/{len(self.data_loader)}]---- loss {reg_loss.item():f}, {cls_loss.item():f}")
+                # print(f"Client: {idx}({self.user_idx:2d}) Local Epoch: [{local_epoch}][{i+1}/{len(self.data_loader)}]---- loss {reg_loss.item():f}, {cls_loss.item():f}")
                 model.load_state_dict(local_parameter)
                 count = count + 1
         # local_control_parameters = local_control.state_dict()

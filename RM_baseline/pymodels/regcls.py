@@ -48,7 +48,7 @@ class DoraNet(nn.Module):
         if self.training:
             return reg, cls
         else:
-            return reg * (torch.sigmoid(cls) > 0.5).float() * (158.7472538974973 - 57.70791516029391) - 158.7472538974973
+            return (reg * (158.7472538974973 - 57.70791516029391) - 158.7472538974973) * (torch.sigmoid(cls) > 0.5).float()
 
 def main():    
     b = 1

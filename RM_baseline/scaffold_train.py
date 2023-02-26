@@ -15,7 +15,7 @@ os.environ['KMP_DUPLICATE_LIB_OK'] = "TRUE"
 sys.path.append("../..")
 
 epochs = 500  # total epochs
-local_epochs = 8 # local epochs of each user at an iteration
+local_epochs = 10 # local epochs of each user at an iteration
 saveLossInterval = 1  # intervals to save loss
 saveModelInterval = 10  # intervals to save model
 batchSize = 512  # batchsize for training and evaluation
@@ -89,7 +89,6 @@ class Client: # as a user
                 pos = pos.float().to(device)
                 pathloss = pathloss.float().to(device)
                 mask = torch.where(pathloss != 0., 1., 0.).float().to(device)
-                pathloss = (pathloss + 158.7472538974973) / (158.7472538974973 - 57.70791516029391)
                 optimizer.zero_grad()
                 reg, cls = model(pos)
                 reg_loss = torch.mean(torch.abs(reg[pathloss != 0] - pathloss[pathloss != 0]))
@@ -184,7 +183,7 @@ def train_main(train_dataset_path):
         train_dataset, valid_dataset = torch.utils.data.random_split(all_dataset, [train_size, valid_size])
         train_datasets.append(train_dataset)
         valid_datasets.append(valid_dataset)
-        train_loader = torch.utils.data.DataLoader(train_dataset, batchSize, shuffle=True, num_workers=num_workers)
+        train_loader = torch.utils.data.DataLoader(train_dataset, batchSize, shuffle=True, num_workers=num_workers, drop_last=True)
         train_dataloaders.append(train_loader)
 
     valid_data_comb = DoraSetComb(valid_datasets)

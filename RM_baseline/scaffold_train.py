@@ -60,7 +60,7 @@ class ScaffoldServer: # used as a center
 
     def upload(self, delta_parameters, delta_controls):
         for i, (k, v) in enumerate(self.global_parameters.items()):
-            tmp_v = torch.zeros_like(v, dtype=torch.float)
+            tmp_v = torch.zeros_like(v)
             for j in range(len(delta_parameters)):
                 tmp_v += delta_parameters[j][k]
             tmp_v = tmp_v / len(delta_parameters)

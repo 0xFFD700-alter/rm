@@ -186,7 +186,7 @@ def trunc_normal_(tensor, mean=0., std=1., a=-2., b=2.):
         return _trunc_normal_(tensor, mean, std, a, b)
 
 class DoraNet(nn.Module):
-    def __init__(self, num_outputs=4, dim=8, depth=6, drop_rate=0.2,
+    def __init__(self, num_outputs=4, dim=8, depth=4, drop_rate=0.,
                  act_layer=nn.GELU, drop_path_rate=0., init_scale=1e-4):
         super().__init__()
         self.num_outputs = num_outputs
@@ -230,7 +230,7 @@ class DoraNet(nn.Module):
         if self.training:
             return x, cls
         else:
-            return (x * (158.7472538974973 - 57.70791516029391) - 158.7472538974973) * (torch.sigmoid(cls) > 0.5).float()
+            return x * (torch.sigmoid(cls) > 0.5).float()
 
 def main():    
     b = 1
